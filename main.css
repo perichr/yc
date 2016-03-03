@@ -1,0 +1,151 @@
+﻿body{
+	margin:0;
+	padding:0 1em;
+}
+a{
+	text-decoration: none;
+	color:gray;
+}
+nav{
+	margin:0 .3em;
+}
+nav *{
+	padding:0 .3em;
+}
+h1>a:after, h2>a:after{
+	content:"☞";
+}
+#content>div{
+	line-height:100%;
+}
+#content>div>div{
+	margin:.3em;
+	padding:0 1em 0 3em;
+	position: relative;
+}
+#content>div>div>span{
+	position: absolute;
+	top: .1em;
+	bottom: 0;
+	left:0;
+	vertical-align:middle;
+	padding: .3em 0;
+}
+#content>div>div>span:after{
+	content:"：";
+}
+#content>div b{
+	display:inline-block;
+	margin:.1em .3em;
+	padding:.2em .5em;;
+	cursor: pointer;
+	border:1px dashed silver;
+	font-weight: normal;
+}
+#content>div b:hover{
+	border-style:solid;
+}
+#content>div b:after{
+	content: "("attr(title)")";
+	font-size: 60%;
+	vertical-align:super;
+}
+#content>div b.filter{
+	border-style:solid;
+	background-color: silver;
+}
+#content ul{
+	display:inline-block;
+	margin:0;
+	padding:0;
+}
+#content>ul li{
+	display:inline-block;
+	margin:.3em;
+}
+#list{
+	position: relative;
+}
+.card{
+	vertical-align: top;
+	border-width:1px;
+	border-style:dashed;
+	margin:.3em;
+	padding:0;
+	display:inline-block;
+	opacity: .8;
+	cursor: default;
+	border-collapse:collapse;
+	table-layout:fixed;
+	margin:0em;
+	padding:0;
+}
+.card:hover{
+	border-style:solid;
+	opacity: 1;
+}
+.card.学生{
+	border-color:pink;
+	background-color: lavenderblush;
+}
+.card.学生 *{
+	border-color:pink;
+}
+.card.学生 tr:nth-child(2) td:nth-child(2):before{
+	content:'[学]'
+}
+.card.校方 tr:nth-child(2) td:nth-child(2):before{
+	content:'[校]'
+}
+.card.校方{
+	border-color:skyblue;
+	background-color: aliceblue;
+}
+.card.校方 *{
+	border-color:skyblue;
+}
+.card tr:nth-child(2) td:nth-child(2) b:before{
+	content:'@'
+}
+.card tr:nth-child(2) b{
+	margin: .3em;
+}
+
+.card th, .card  td{
+	border-width:1px;
+	border-style:solid;
+}
+.card th{
+	text-align:center;
+	font-weight:bolder;
+}
+.card tr th{
+	width:2.25em;
+}
+.card tr td{
+	width:4em;
+}
+.card tr.keywords td{
+	text-align:center;
+}
+.card tr>*{
+	padding:.2em;
+}
+.card tr:first-child *{
+	border-top:none;
+}
+.card tr *:first-child{
+	border-left:none;
+}
+.card tr:last-child *{
+	border-bottom:none;
+}
+.card tr *:last-child{
+	border-right:none;
+}
+.card b{
+	cursor: pointer;
+	padding: 0 .1em;
+}
+.empty{
+}
