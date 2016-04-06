@@ -86,7 +86,7 @@ P.GetCharacters = function(callback) {
 	if(ls.status) 
 		convert(ls.data)
 	else
-		$.get(schoolKey + '.txt?' + (new Date()).getTime(), function(data, status) {
+		$.get( 'http://perichr.qiniudn.com/' + schoolKey + '.txt?' + (new Date()).getTime(), function(data, status) {
 			if(status == 'success') {
 				P.SaveCache(schoolKey, data)
 				convert(data)
