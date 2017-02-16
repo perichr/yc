@@ -13,6 +13,53 @@ var R = P.r = {} // 路由函数的根对象
 	, $h1 = $('<h1>')
 	, $title = $('title')
 	, $body = $('body').prepend($content).prepend($h1)
+	, RULE = {
+    filter: '身份，年龄，班级，成绩，寝室，班职，校职，萌点'.split('，')			//参与过滤的属性
+    , array: '萌点，班职，校职，人设'.split('，')			//可以多项的属性
+		, showTable: [			//表格显示的行列模板
+			{ 姓名: 3, 年龄: 1 }
+			,{ 身高: 1, 体重: 1, 三围: 1, 寝室: 1}
+			,{ 班级: 1, 成绩: 1, 班职: 2}
+			, '校职 身材 穿着 容貌 特长 缺点 特点 性格 爱好 讨厌 背景 萌点'.split(' ')
+		]
+		, character: {			//特定属性的输出方法
+			身份: function() { return this.info.身份 || '学生' }
+			, 学生: function() { return this.info.身份 == '学生' }
+			, 校方: function() { return this.info.身份 == '校方' }
+			, 成绩: function() { return this.学生() ? (this.info.成绩 || '中') : null }
+			, 年龄: function() {
+				var age = this.info.年龄
+				if(age)
+					return age
+				if(this.学生() && (age = this.info.年级))
+					return (parseInt(age) + 15) + ''
+			}
+			, 班级: function() {
+				var g, c
+				if(this.学生() && (g = this.info.年级) && (c = this.info.班级))
+					return g + '年' + c + '班'
+				if(this.学生())
+					return '无'
+			}
+			, 身高: function() { return this.info.身高 ? this.info.身高 + 'cm' : null }
+			, 体重: function() { return this.info.体重 ? this.info.体重 + 'kg' : null }
+		}
+		, sortValue: {			//特定属性的排序方法
+			班级: function(str) {
+				if(!str == '无') return '0'
+				str = str.replace(/(\d{1,})年(\d{1,}班)/g, function(str, d1, d2) { return padding(d1, 3) + padding(d2, 3); })
+				return str
+				function padding(str, length) {
+					var arr = [str]
+					for(var i = length - str.length; i > 0; i --) { arr.unshift(0) }
+					return arr.join('')
+				}
+			}
+			, 成绩: function(str) {
+				return '' + ($.inArray(str, '差，中下，中，中上，优，学霸'.split('，')) + 1)
+			}
+		}
+	}
 
 //基础类	
 P.Character = function() {			//角色对象的基础类
@@ -43,6 +90,38 @@ P.Character.Set = function(schoolKey, protos) {
 	return F
 }
 
+//
+P.InitSchool = function() {
+
+    var $temp = $('<div>').append($('noscript').text())
+      , S = {}, reg = /\/(\d+)\.txt$/
+
+    $temp.find('li').each(function() {
+        var $this = $(this)
+        , $a = $this.find('a')
+        , key = $a.attr('href').match(reg)[1]
+        S[key] = {
+            name : $a.text()
+            , description: $this.find('.description').html()
+            , sealed : $this.hasClass('封印')
+        }
+    })
+    
+    W.S = S
+
+
+  $.each(W.S, function(schoolKey, school) {
+    $.each(RULE, function(ruleKey,rule) {
+      var schoolRule = school[ruleKey]
+      if(undefined === schoolRule)
+        school[ruleKey] = rule
+       else if ($.isFunction(schoolRule))
+        school[ruleKey] = schoolRule(rule)
+    })
+  })
+}
+
+//
 P.GetSchool = function(key) {
 	return key ? W.S[key] : W.S
 }
@@ -86,7 +165,7 @@ P.GetCharacters = function(callback) {
 	if(ls.status) 
 		convert(ls.data)
 	else
-		$.get( 'http://perichr.qiniudn.com/' + schoolKey + '.txt?' + (new Date()).getTime(), function(data, status) {
+		$.get( 'schools/' + schoolKey + '.txt?' + (new Date()).getTime(), function(data, status) {
 			if(status == 'success') {
 				P.SaveCache(schoolKey, data)
 				convert(data)
@@ -221,6 +300,7 @@ P.IsArrayKey = function(key, school) {
 	return $.inArray(key, school.array) != -1
 }
 
+
 //构造页面
 P.View = function(title, content, callback) {
 	$h1.html(title)
@@ -234,11 +314,11 @@ P.View.Home = function() {
 	var retval = ''
 	retval += '<ul id="schoolList">'
 	$.each(P.GetSchool(), function(schoolKey, school) {
-		retval += '<li><h2>' + school.name + '<a href="http://tieba.baidu.com/p/' + schoolKey + '" rel="external"></a></h2><p>' + school.description + '</p><p><a href="#!school/' + schoolKey + '" rel="external">角色汇总表</a></p></li>'
+		retval = '<li' + (school.sealed ? ' class="sealed"' : '')  + '><h2>' + school.name + '<a href="http://tieba.baidu.com/p/' + schoolKey + '" rel="external"></a></h2><p>' + school.description + '</p><p><a href="#!school/' + schoolKey + '">角色汇总表</a></p></li>' + retval
 	})
 	retval += '</ul>'
 	
-	P.View('变百吧语C楼角色汇总',  retval)
+	P.View('我们的宏北女高',  retval)
 }
 //学校页的内容
 P.View.School = function(locally) {
@@ -255,7 +335,7 @@ P.View.School = function(locally) {
 		P.currentCharacters = P.GetFilteredCharacters(school.currentFilters, P.searchedCharacters, school)			//过滤关键字
 
 		var retval = createnavi() + createstats() + createinfo() + createlist()
-		P.View(school.name + '<a href="http://tieba.baidu.com/p/' + P.currentSchoolKey + '" rel="external"></a>', retval, P.View.SchoolBinding)
+		P.View('《我们的宏北女高》（' + school.name + '）<a href="http://tieba.baidu.com/p/' + P.currentSchoolKey + '" rel="external"></a>', retval, P.View.SchoolBinding)
 	}
 
 	//构造导航内容
@@ -428,13 +508,20 @@ P.View.ShowCharacter = function(character) {
 					html = html + '<tr>' + temp + '</tr>'
 			}
 		})
+		if(character.info.人设) {
+            var temp = []
+            $.each(character.info.人设, function(no, rs){
+                temp.push('<a href="' + rs + '" rel="external">' + (no + 1) + '</a>')
+            })
+            html += '<tr class="rs">' + td('人设', temp.join(''), 4) + '</tr>'
+		}
 		html += emptyRow + '</table>'
 		character.html = html
 	}
 	return html
 	function get(key) {
 		var value = character.Get(key, (key == '姓名') ? function() {
-			return '<span>' + character.info.姓名 + '</span> ' + warp('账号', character.info.账号)+ ' <a href="http://tieba.baidu.com/home/main?un=' + character.info.账号 + '&ie=utf-8&fr=pb" rel="external">☞</a>'
+			return '<span>' + character.info.姓名 + '</span><a class="baiduid" href="http://tieba.baidu.com/home/main?un=' + character.info.账号 + '&ie=utf-8&fr=pb" rel="external">' + character.info.账号 + '</a>' + (character.info.原帖 ? ('<a class="post" href="https://tieba.baidu.com/p/4980624255?pid=' + character.info.原帖 + '#post_content_' + character.info.原帖 + '" rel="external">原帖</a>') : '')
 		} : null)
 		, isArray = $.isArray(value), isFilter = $.inArray(key, school.filter) != -1
 		if(value) {
@@ -497,8 +584,12 @@ $(function() {
 
 var home = 'main', R = P.r
 
-$.getScript("schools.js", function() {
-	
+$('body').on('click', 'a[rel=external]', function(event){
+    window.open(this.href)
+    event.preventDefault()
+})
+
+	P.InitSchool()
 	//设定路由
 	Q
 		.reg(home, R.home)
@@ -507,7 +598,6 @@ $.getScript("schools.js", function() {
 	//初始化首页路由
 		.init({ index:home })
 	
-})
 
 
 	

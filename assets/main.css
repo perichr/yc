@@ -6,6 +6,10 @@ a{
 	text-decoration: none;
 	color:gray;
 }
+a:hover{
+	color:red;
+	text-shadow:1px 1px 1px rgba(255, 0, 0, .2)
+}
 nav{
 	margin:0 .3em;
 }
@@ -66,6 +70,15 @@ h1>a:after, h2>a:after{
 #list{
 	position: relative;
 }
+li.sealed{
+    color: silver;
+}
+li.sealed a{
+    color: silver;
+}
+li.sealed h2:after{
+    content: '<已封印！>';
+}
 .card{
 	vertical-align: top;
 	border-width:1px;
@@ -92,10 +105,10 @@ h1>a:after, h2>a:after{
 	border-color:pink;
 }
 .card.学生 tr:nth-child(2) td:nth-child(2):before{
-	content:'[学]'
+	content:'【生】'
 }
 .card.校方 tr:nth-child(2) td:nth-child(2):before{
-	content:'[校]'
+	content:'【校】'
 }
 .card.校方{
 	border-color:skyblue;
@@ -104,13 +117,15 @@ h1>a:after, h2>a:after{
 .card.校方 *{
 	border-color:skyblue;
 }
-.card tr:nth-child(2) td:nth-child(2) b:before{
-	content:'@'
+.card tr:nth-child(2) a{
+	font-size:80%;
 }
-.card tr:nth-child(2) b{
-	margin: .3em;
+.card a.baiduid:before, .card a.post:before, tr.rs a:before{
+	content:'【';
 }
-
+.card a.baiduid:after,.card a.post:after, tr.rs a:after{
+	content:'】';
+}
 .card th, .card  td{
 	border-width:1px;
 	border-style:solid;
